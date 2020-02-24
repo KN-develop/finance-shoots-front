@@ -27,8 +27,6 @@
                         :placeholder="'Текст заголовка'"
                         :maxlength="50"
                         :show-word-limit="true"
-                        @focus="onFocusInput"
-                        @blur="onBlurInput"
                     />
                 </el-form-item>
                 <el-form-item label="Сабтайтл" prop="subtitle">
@@ -38,32 +36,32 @@
                         :placeholder="'Текст подзаголовка'"
                         :maxlength="50"
                         :show-word-limit="true"
-                        @focus="onFocusInput"
-                        @blur="onBlurInput"
                     />
                 </el-form-item>
-                <el-form-item label="Изображение">
+                <el-form-item label="Изображение" :class="{ 'is-error': imageError }">
                     <el-upload
                         class="create-shoot__upload"
                         drag
                         action="#"
                         :auto-upload="false"
                         :limit="1"
-                        :show-file-list="false"
                         :accept="'.png'"
                         :on-change="onImageChange"
+                        :on-remove="onClearImage"
                         ref="upload"
                     >
                         <span>Загрузить изображение</span>
                     </el-upload>
+                    <div class="el-form-item__error" v-show="imageError">Неверный формат изображения</div>
+                    <span class="el-form-item__info">only .png</span>
                 </el-form-item>
                 <el-form-item label="Цвет фона" prop="backgroundColor">
                     <el-input
                         type="text"
                         v-model="formFields.backgroundColor"
-                        @focus="onFocusInput"
-                        @blur="onBlurInput"
+                        :placeholder="'#E4E4E4'"
                     />
+                    <span class="el-form-item__info">hex</span>
                 </el-form-item>
             </div>
             <section class="create-shoot__preview">
@@ -101,21 +99,19 @@
                     backgroundColor: '',
                 },
                 rules: {
-                    categories: [{ required: true, message: 'Please input Activity name', trigger: 'change' }],
-                    title: [
-                        { required: true, message: 'Please input Activity name', trigger: 'blur' },
-                        {validator(rule, value, callback, source, options) {
-                                var errors = [];
-                                // test if email address already exists in a database
-                                // and add a validation error to the errors array if it does
-                                return errors;
-                            }}
+                    categories: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'change' }],
+                    title: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
+                    subtitle: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
+                    image: [{ message: 'Недопустимый формат изображения!', trigger: 'change' },],
+                    backgroundColor: [
+                        { required: true, pattern: /^#([0-9a-f]{3}|[0-9a-f]{6})$/i, message: 'Неверный цветовой код!', trigger: 'blur' },
                     ],
-                    subtitle: [{ required: true, message: 'Please input Activity name', trigger: 'blur' }],
-                    backgroundColor: [{ required: true, message: 'Please input Activity name', trigger: 'blur' }],
-                }
+                },
+                imageError: false,
+                timer: null,
             }
         },
+        props: ['category'],
         computed: {
             ...mapGetters('shoots', ['getFormFields']),
             preview() {
@@ -141,37 +137,57 @@
         methods: {
             mergeFields(newFields) {
                 this.formFields = Object.assign(this.formFields, newFields);
-            },
-            createShoot() {
-                console.log('Create-shoot');
-            },
-            onSelectImage(e) {
-                console.log(e);
+                this.formFields.categories.selected = this.category;
             },
             onImageChange(e) {
+                this.imageError = false;
                 const fr = new FileReader();
                 fr.addEventListener("load", () => {
                     this.formFields.image = fr.result;
-                    this.$refs.upload.clearFiles();
                 }, false);
 
                 if (e.raw.type === 'image/png') {
                     fr.readAsDataURL(e.raw);
+                } else if (!this.formFields.image) {
+                    this.$refs.upload.clearFiles();
+                    this.imageError = true;
                 }
             },
-            onFocusInput(el) {
-                console.log(el)
+            onClearImage(e) {
+                this.formFields.image = '';
+                console.log(e);
             },
-            onBlurInput(el) {
-                console.log(el)
+            goBack(e) {
+                if (e === 'popup-success') {
+                    if (this.timer) {
+                        clearTimeout(this.timer);
+                        this.timer = null;
+                    }
+                    this.$router.go(-1);
+                }
             },
-            onSubmitForm() {
-                console.log('ON-SUBMIT-FORM');
+            closePopup(name) {
+                this.$bus.$emit('app-close-popup', name);
+            },
+            async onSubmitForm() {
+                const res = await this.$store.dispatch('shoots/createShoot', this.formFields);
+                if (res) {
+                    this.$bus.$emit('app-open-popup', 'popup-success');
+                    this.timer = setTimeout(this.closePopup, 5000, 'popup-error');
+                } else {
+                    this.$bus.$emit('app-open-popup', 'popup-error');
+                    this.timer = setTimeout(this.closePopup, 5000, 'popup-error');
+                    console.log(res);
+                }
             },
         },
         beforeMount() {
             this.mergeFields(this.getFormFields);
+            this.$bus.$on('app-close-popup', this.goBack);
         },
+        beforeDestroy() {
+            this.$bus.$off('app-close-popup', this.goBack);
+        }
     }
 </script>
 <style lang="scss">
@@ -219,6 +235,10 @@
                 * {
                     border-color: $color-error-1 !important;
                 }
+
+                .el-upload-dragger {
+                    color: $color-error-1;
+                }
             }
             &.is-required {
                 .el-form-item__label {
@@ -231,6 +251,13 @@
             &__error {
                 @include font-size(12px, 0.02em, 24px);
                 color: $color-error-1;
+            }
+
+            &__info {
+                position: absolute;
+                right: 10px;
+                bottom: 100%;
+                color: $color-secondary;
             }
         }
 
@@ -280,6 +307,72 @@
 
             .el-upload {
                 width: 100%;
+            }
+
+            .el-upload-list {
+                position: absolute;
+                top: 1px;
+                left: 1px;
+                height: calc(100% - 2px);
+                width: calc(100% - 2px);
+                pointer-events: none;
+
+                &__item {
+                    height: 100%;
+                    line-height: 56px;
+                    margin: 0;
+                    text-align: left;
+                    padding-left: 30px;
+                    padding-right: 30px;
+                    background-color: white;
+                    pointer-events: auto;
+                }
+                &__item-name {
+                    font-size: 18px;
+                    padding: 0;
+                    margin: 0;
+                    height: 100%;
+                    color: $color-blue-1;
+                    pointer-events: none;
+                }
+                .el-upload-dragger {
+                    border-color: $color-blue-1;
+                }
+                .el-icon-document {
+                    display: none;
+                }
+                &__item-status-label {
+                    top: 50%;
+                }
+                .el-icon-close {
+                    top: 50%;
+                    right: 22px;
+                    transform: translateY(-50%);
+                    color: $color-blue-1;
+                    font-size: 18px;
+                    opacity: 1;
+                    transition-duration: $transition-hover-off;
+
+                    &:hover,
+                    &:focus {
+                        opacity: 0.6;
+                        transition-duration: $transition-hover-on;
+                    }
+
+                    &::before {
+                        content: "\e6db" !important;
+                    }
+
+                    &::after {
+                        position: absolute;
+                        content: '';
+                        width: 200%;
+                        height: 200%;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                    }
+                }
             }
 
             .el-upload-dragger {

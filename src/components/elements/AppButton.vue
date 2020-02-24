@@ -7,7 +7,7 @@
             :class="computedClasses"
             :style="computedStyles"
             :type="tag === 'button' && typeBtn"
-            @click="onClickButton"
+            @click.prevent.stop="onClickButton"
     >
         <slot />
     </component>

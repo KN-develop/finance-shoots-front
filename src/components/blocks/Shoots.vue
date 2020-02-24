@@ -12,7 +12,7 @@
                     />
                 </swiper-slide>
                 <swiper-slide class="shoots__item">
-                    <ShootCreate />
+                    <ShootCreate :category="title" />
                 </swiper-slide>
             </swiper>
         </div>
@@ -64,6 +64,12 @@
 </script>
 <style lang="scss">
     .shoots {
+        margin: 0 -32px;
+
+        @include w-to($screen-lg) {
+            margin: 0;
+        }
+
         &__title {
             @include font-size(30px, 0.02em, 24px);
             text-align: left;
@@ -74,12 +80,10 @@
         &__list-wrapper {
             position: relative;
             box-sizing: border-box;
-            width: calc(100% + 48px);
-            margin: 0 -40px 48px -8px;
+            margin-bottom: 48px;
             text-align: left;
 
             @include w-to($screen-lg) {
-                width: 100%;
                 margin: 0 0 48px;
             }
 

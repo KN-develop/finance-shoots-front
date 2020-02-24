@@ -43,7 +43,7 @@ export default {
     },
     methods: {
         onAddShot() {
-            this.$router.push('/add-shoot');
+            this.$router.push('/create');
         },
         onGoHome() {
             this.$router.replace('/');

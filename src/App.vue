@@ -4,6 +4,7 @@
       <Header />
       <router-view></router-view>
     </Container>
+    <Popup />
   </div>
 </template>
 
@@ -11,12 +12,14 @@
 //import "@/styles/style.scss";
 import Header from "./layout/Header";
 import Container from "./components/layouts/Container";
+import Popup from "./components/blocks/popups/Popup";
 
 export default {
   name: 'App',
   components: {
     Header,
     Container,
+    Popup,
   }
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
     <AppPage>
-        <CreateShoot />
+        <CreateShoot :category="category" />
     </AppPage>
 </template>
 
@@ -12,6 +12,12 @@
         components: {
             AppPage,
             CreateShoot,
+        },
+        props: {
+            category: {
+                type: String,
+                default: null,
+            },
         },
     }
 </script>

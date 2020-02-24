@@ -1,12 +1,12 @@
 <template>
     <div class="shoot-create" @click.stop="onCreateShoot">
-        <AppButton class="app-button--ellipse" @on-click="onCreateShoot">
+        <AppButton class="app-button--ellipse" :tag="'div'">
             <AppIcon>
                 <IconPlus />
             </AppIcon>
         </AppButton>
         <p>Создать shot</p>
-        <router-link class="shoot-create__link" to="/add-shoot"></router-link>
+        <router-link class="shoot-create__link" :to="go"></router-link>
     </div>
 </template>
 <script>
@@ -20,9 +20,16 @@
             AppIcon,
             IconPlus,
         },
+        data() {
+            return {
+                go: { path: '/create', query: { category: this.category } },
+            }
+        },
+        props: ['category'],
         methods: {
             onCreateShoot() {
-                console.log('createShoot')
+                console.log('go-create');
+                this.$router.replace(this.go);
             },
         },
     }
@@ -52,7 +59,6 @@
         }
 
         .app-button {
-            cursor: pointer;
             &:focus {
                 outline: 1px solid $color-blue-2;
             }

@@ -2,7 +2,7 @@
     <article
         class="ch-preview"
         :style="{
-            'background-color': params.backgroundColor,
+            'background-color': params.backgroundColor || '#E4E4E4',
             'background-image': `url(${params.image})`,
         }"
     >
@@ -10,7 +10,7 @@
             <h2>{{ params.title || 'Head Title' }}</h2>
             <h3>{{ params.subtitle || 'Subtitle text' }}</h3>
         </hgroup>
-        <hr class="ch-preview__divider" />
+        <div class="ch-preview__divider" v-if="!params.image"></div>
         <AppIcon class="ch-preview__icon" v-if="!params.image">
             <IconDefaultImg />
         </AppIcon>
@@ -50,10 +50,9 @@
 
         &__header {
             min-height: 96px;
-            margin: 0 0 75px;
+            margin: 0 ;
             padding: 0;
             background: transparent;
-            border-bottom: 1px dashed black;
 
             h2, h3 {
                 @include font-size(18px, 0.02em, 24px);
@@ -66,6 +65,11 @@
             h2 {
                 font-weight: bold;
             }
+        }
+
+        &__divider {
+            margin-bottom: 75px;
+            border-bottom: 1px dashed black;
         }
 
         &__icon {

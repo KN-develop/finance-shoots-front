@@ -1,3 +1,7 @@
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export default {
     namespaced: true,
     state: {
@@ -76,13 +80,27 @@ export default {
             title: '',
             subtitle: '',
             image: '',
-            backgroundColor: '#E4E4E4',
+            backgroundColor: '',
         }
     },
 
-    mutations: {},
+    mutations: {
+        setFormFields(state, val = {}) {
+            Object.defineProperties(state.form, val);
+        },
+        setCategories(state, val = []) {
+            state.shootCategories = val;
+        },
+    },
 
-    actions: {},
+    actions: {
+        async createShoot({ commit }, payload = {}) {
+            console.log(payload);
+            commit('setFormFields', {});
+            await sleep(2000);
+            return true;
+        },
+    },
 
     getters: {
         getShootCategories(state) {
@@ -91,7 +109,7 @@ export default {
         getFormFields(state) {
             const res = Object.assign({}, state.form);
             res.categories.list = state.shootCategories.map(el => ({ value: el.name, label: el.name}));
-            res.categories.selected = res.categories.list[0].value;
+            //res.categories.selected = res.categories.list[0].value;
 
             return res
         }

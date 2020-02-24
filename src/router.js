@@ -1,7 +1,7 @@
-import Index from './pages/Index';
-import AddShoot from './pages/AddShoot';
+import Index from './pages/index';
+import Create from './pages/create';
 
 export default [
     { path: '/', component: Index },
-    { path: '/add-shoot', component: AddShoot },
+    { path: '/create', component: Create, props: (route) => ({ category: route.query.category }) },
 ];

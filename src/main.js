@@ -9,6 +9,11 @@ import vuexStore from './store'
 import { Form, FormItem, Select, Option, Input, Upload } from 'element-ui';
 
 Vue.config.productionTip = false;
+
+// Init global event bus
+Vue.prototype.$bus = new Vue();
+
+// Plugins
 Vue.use(VueRouter);
 Vue.use(Vuex);
 Vue.use(VueAxios, axios);
@@ -22,12 +27,15 @@ Vue.use(Input);
 Vue.use(Upload);
 
 const router = new VueRouter({
-  routes
+  routes,
+  scrollBehavior () {
+    return { x: 0, y: 0 }
+  }
 });
 
 const store = new Vuex.Store(vuexStore);
 
-new Vue({
+window.app = new Vue({
   render: h => h(App),
   router,
   store,
